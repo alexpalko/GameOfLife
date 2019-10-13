@@ -1,7 +1,6 @@
 package com.ConcurrentCartel.GameOfLife.cells;
 
 import com.ConcurrentCartel.GameOfLife.Ecosystem;
-
 import java.util.concurrent.CountDownLatch;
 
 public class AsexualCell extends Cell {
@@ -15,7 +14,8 @@ public class AsexualCell extends Cell {
     }
 
     protected void reproduce() {
-
+        ecosystem.addCell(new AsexualCell(ecosystem));
+        status = CellStatus.HUNGRY;
     }
 
 }

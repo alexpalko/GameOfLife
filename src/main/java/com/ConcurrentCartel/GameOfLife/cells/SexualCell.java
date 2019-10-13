@@ -1,6 +1,7 @@
 package com.ConcurrentCartel.GameOfLife.cells;
 
 import com.ConcurrentCartel.GameOfLife.Ecosystem;
+import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 
 public class SexualCell extends Cell {
@@ -14,6 +15,7 @@ public class SexualCell extends Cell {
     }
 
     protected void reproduce() {
+        Collection<Cell> cells = ecosystem.getCells();
         throw new RuntimeException(new UnsupportedOperationException("Method not implemented"));
     }
 

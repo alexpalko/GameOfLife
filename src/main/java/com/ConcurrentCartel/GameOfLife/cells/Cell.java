@@ -46,7 +46,7 @@ public abstract class Cell extends Thread{
 
         }
 
-        while(status != CellStatus.DEAD) {
+        while(true) {
             switch (status){
                 case HUNGRY:
                     if (!eat()){
@@ -61,7 +61,6 @@ public abstract class Cell extends Thread{
                 case CONTENT:
                     continue;
                 case DEAD:
-                    die();
                     break;
                 default:
                     logger.error("{} reached an invalid state");
