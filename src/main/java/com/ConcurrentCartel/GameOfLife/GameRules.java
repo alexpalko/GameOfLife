@@ -23,7 +23,9 @@ public class GameRules {
         return startSCells;
     }
 
-    public int getStartFoodUnits() {return startFoodUnits; }
+    public int getStartFoodUnits(){
+        return startFoodUnits;
+    }
 
     public int getFullTime(){
         return fullTime;

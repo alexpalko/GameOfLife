@@ -23,6 +23,7 @@ public abstract class Cell extends Thread{
     // This constructor will be used by Ecosystem to initialize the original specified cells.
     public Cell(Ecosystem ecosystem, CountDownLatch startLatch) {
         this(ecosystem);
+        status = CellStatus.MATING; // FOR TESTING
         this.startLatch = startLatch;
     }
 
@@ -49,13 +50,14 @@ public abstract class Cell extends Thread{
         while(true) {
             switch (status){
                 case HUNGRY:
-                    if (!eat()){
-                        die();
-                    }
-                    else eatCount++;
-                    if (eatCount == 10){
-                        status = CellStatus.MATING;
-                    }
+                    continue;
+//                    if (!eat()){
+//                        die();
+//                    }
+//                    else eatCount++;
+//                    if (eatCount == 10){
+//                        status = CellStatus.MATING;
+//                    }
                 case MATING:
                     reproduce();
                 case CONTENT:

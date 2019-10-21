@@ -17,5 +17,4 @@ public class AsexualCell extends Cell {
         ecosystem.addCell(new AsexualCell(ecosystem));
         status = CellStatus.HUNGRY;
     }
-
 }

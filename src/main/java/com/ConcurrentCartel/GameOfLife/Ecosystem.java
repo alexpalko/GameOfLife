@@ -4,7 +4,10 @@ import javax.naming.OperationNotSupportedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.ConsoleHandler;
+
 import com.ConcurrentCartel.GameOfLife.cells.AsexualCell;
 import com.ConcurrentCartel.GameOfLife.cells.Cell;
 import com.ConcurrentCartel.GameOfLife.cells.SexualCell;
@@ -70,18 +73,52 @@ public class Ecosystem {
         }
 
         logger.info("The simulation has started.");
+
+        //TODO: remove - needed for testing
+        try {
+            Thread.sleep(2000);
+            for (Cell cell :
+                    cells) {
+                System.out.println(cell.getName() + " " + cell.getState());
+            }
+        }
+        catch (InterruptedException ex){
+
+        }
     }
 
+    Object cellListLock = new Object();
+
     public void addCell(Cell newCell){
-        throw new RuntimeException(new UnsupportedOperationException("Method not implemented."));
+        synchronized (cellListLock){
+            cells.add(newCell);
+        }
+//        throw new RuntimeException(new UnsupportedOperationException("Method not implemented."));
     }
 
     public Collection<Cell> getCells(){
-        return Collections.unmodifiableCollection(cells);
+        synchronized (cellListLock) {
+            return Collections.unmodifiableCollection(cells);
+        }
+    }
+
+    public Collection<SexualCell> getSexualCells() {
+        synchronized (cellListLock) {
+            Collection<SexualCell> sexualCells = new ArrayList<SexualCell>();
+            for (Cell c : cells) {
+                if (c instanceof SexualCell) {
+                    sexualCells.add((SexualCell) c);
+                }
+            }
+            return Collections.unmodifiableCollection(sexualCells);
+        }
     }
 
     public void removeCell(Cell cell){
-        throw new RuntimeException(new UnsupportedOperationException("Method not implemented."));
+        synchronized (cellListLock){
+            cells.remove(cell);
+        }
+        //throw new RuntimeException(new UnsupportedOperationException("Method not implemented."));
     }
 
     public void addFoodUnit(int amount){

@@ -6,6 +6,8 @@ import java.util.concurrent.CountDownLatch;
 
 public class SexualCell extends Cell {
 
+    Object beingCourted = new Object();
+
     public SexualCell(Ecosystem ecosystem){
         super(ecosystem);
     }
@@ -15,8 +17,28 @@ public class SexualCell extends Cell {
     }
 
     protected void reproduce() {
-        Collection<Cell> cells = ecosystem.getCells();
-        throw new RuntimeException(new UnsupportedOperationException("Method not implemented"));
+        while (super.status == CellStatus.MATING) {
+            Collection<SexualCell> cells = ecosystem.getSexualCells();
+            for (SexualCell cell : cells) {
+                if (super.status != CellStatus.MATING) break;
+                if (cell == this) continue;
+                if(Signal(cell)){
+                    logger.info("{} reproduced with {}", this.getName(), cell.getName());
+                    break;
+                }
+            }
+        }
     }
 
+    private boolean Signal(Cell cell){
+        synchronized (beingCourted) {
+            if (cell.status == CellStatus.MATING) {
+                ecosystem.addCell(new SexualCell(ecosystem));
+                cell.status = CellStatus.HUNGRY;
+                this.status = CellStatus.HUNGRY;
+                return true;
+            } else
+                return false;
+        }
+    }
 }
