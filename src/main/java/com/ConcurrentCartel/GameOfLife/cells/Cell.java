@@ -11,7 +11,7 @@ public abstract class Cell extends Thread{
 
     protected Ecosystem ecosystem;
     protected CellStatus status;
-    private int eatCount;
+    protected int eatCount;
 
     private CountDownLatch startLatch;
 
@@ -23,7 +23,6 @@ public abstract class Cell extends Thread{
     // This constructor will be used by Ecosystem to initialize the original specified cells.
     public Cell(Ecosystem ecosystem, CountDownLatch startLatch) {
         this(ecosystem);
-        status = CellStatus.MATING; // FOR TESTING
         this.startLatch = startLatch;
     }
 
@@ -44,26 +43,37 @@ public abstract class Cell extends Thread{
                 ex.printStackTrace();
                 return;
             }
-
         }
 
         while(true) {
             switch (status){
                 case HUNGRY:
-                    continue;
-//                    if (!eat()){
-//                        die();
-//                    }
-//                    else eatCount++;
-//                    if (eatCount == 10){
-//                        status = CellStatus.MATING;
-//                    }
+                    logger.info("{} is looking for food", getName());
+                    if (!eat()){
+                        die();
+                    }
+                    else eatCount++;
+                    if (eatCount == 10){
+                        status = CellStatus.MATING;
+                    }
+                    break;
                 case MATING:
                     reproduce();
-                case CONTENT:
-                    continue;
-                case DEAD:
+                    eatCount = 0;
                     break;
+                case CONTENT:
+                    logger.info("{} is now content and sleeping", getName());
+                    try {
+                        Thread.sleep(ecosystem.getFullTime() * 1000);
+                    } catch (InterruptedException e) {
+                        // TODO: handle properly
+                        e.printStackTrace();
+                    }
+                    status = CellStatus.HUNGRY;
+                    logger.info("{} woke up", getName());
+                    break;
+                case DEAD:
+                    return;
                 default:
                     logger.error("{} reached an invalid state");
             }
@@ -71,16 +81,22 @@ public abstract class Cell extends Thread{
     }
 
     private boolean eat() {
-        logger.info("{} is looking for food", this.getName());
-        return ecosystem.removeFoodUnit();
+        if (ecosystem.removeFoodUnit()) {
+            logger.info("{} managed to eat", getName());
+            status = CellStatus.CONTENT;
+            return true;
+        }
+
+        logger.info("{} didn't manage to eat", getName());
+        return false;
     }
 
     private void die() {
         status = CellStatus.DEAD;
-        int foodUnits = new Random().nextInt(5);
+        int foodUnits = new Random().nextInt(4) + 1;
         ecosystem.removeCell(this);
         ecosystem.addFoodUnit(foodUnits);
-        logger.info("{} died and left behind {} food units.", this.getName(), foodUnits);
+        logger.info("{} died and left behind {} food units.", getName(), foodUnits);
     }
 
     protected abstract void reproduce();

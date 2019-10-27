@@ -4,10 +4,9 @@ import javax.naming.OperationNotSupportedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.ConsoleHandler;
-
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import com.ConcurrentCartel.GameOfLife.cells.AsexualCell;
 import com.ConcurrentCartel.GameOfLife.cells.Cell;
 import com.ConcurrentCartel.GameOfLife.cells.SexualCell;
@@ -20,11 +19,14 @@ public class Ecosystem {
     private boolean started;
     private GameRules rules;
     private ArrayList<Cell> cells;
-    private int foodUnits;
+    private volatile int foodUnits;
 
     // This CountDownLatch is used to enable all Cell objects to star their execution
     // at the same time.
     private CountDownLatch startLatch;
+
+    //Object foodLock = new Object();
+    ReentrantLock foodLock = new ReentrantLock();
 
     public Ecosystem(GameRules gameRules){
         rules = gameRules;
@@ -73,18 +75,6 @@ public class Ecosystem {
         }
 
         logger.info("The simulation has started.");
-
-        //TODO: remove - needed for testing
-        try {
-            Thread.sleep(2000);
-            for (Cell cell :
-                    cells) {
-                System.out.println(cell.getName() + " " + cell.getState());
-            }
-        }
-        catch (InterruptedException ex){
-
-        }
     }
 
     Object cellListLock = new Object();
@@ -92,8 +82,12 @@ public class Ecosystem {
     public void addCell(Cell newCell){
         synchronized (cellListLock){
             cells.add(newCell);
+            newCell.start();
         }
-//        throw new RuntimeException(new UnsupportedOperationException("Method not implemented."));
+        logger.info("{} was born, it is a" +
+                (newCell instanceof AsexualCell ?
+                        "n asexual cell" : " sexual cell"),
+                newCell.getName());
     }
 
     public Collection<Cell> getCells(){
@@ -118,15 +112,37 @@ public class Ecosystem {
         synchronized (cellListLock){
             cells.remove(cell);
         }
-        //throw new RuntimeException(new UnsupportedOperationException("Method not implemented."));
     }
 
+    // The food lock should be called whenever more food is added
     public void addFoodUnit(int amount){
-        throw new RuntimeException(new UnsupportedOperationException("Method not implemented."));
+        foodLock.lock();
+            foodUnits += amount;
+        foodLock.unlock();
     }
 
+    // Divide the time until a cell starves into 1 second intervals.
+    // If 1 second passes and the foodlock is not acquired,
+    // the locking process times out and starts again.
     public boolean removeFoodUnit(){
-        throw new RuntimeException(new UnsupportedOperationException("Method not implemented."));
+        int timeout = getStarveTime();
+        for(int i = 0; i < timeout; i++) {
+            try {
+                boolean isLockAcquired = foodLock.tryLock(1, TimeUnit.SECONDS);
+                if (isLockAcquired) {
+                    if (foodUnits > 0) {
+                        foodUnits--;
+                        return true;
+                    }
+                }
+            } catch (InterruptedException ex) {
+                //TODO: handle properly
+                ex.printStackTrace();
+            } finally {
+                foodLock.unlock();
+            }
+        }
+        return false;
     }
 
     public int getStarveTime(){
