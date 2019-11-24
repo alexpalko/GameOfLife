@@ -2,7 +2,6 @@ package com.ConcurrentCartel.GameOfLife.cells;
 
 import com.ConcurrentCartel.GameOfLife.Ecosystem;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 

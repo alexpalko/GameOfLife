@@ -136,7 +136,6 @@ public class Ecosystem {
                     }
                 }
             } catch (InterruptedException ex) {
-                //TODO: handle properly
                 ex.printStackTrace();
             } finally {
                 foodLock.unlock();
