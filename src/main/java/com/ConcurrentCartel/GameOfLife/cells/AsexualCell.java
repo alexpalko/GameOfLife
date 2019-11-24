@@ -14,8 +14,8 @@ public class AsexualCell extends Cell {
     }
 
     protected void reproduce() {
+        logger.info("{} is asexually reproducing", getName());
         ecosystem.addCell(new AsexualCell(ecosystem));
         status = CellStatus.HUNGRY;
     }
-
 }
