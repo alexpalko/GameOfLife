@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class Cell extends Thread{
     protected static final Logger logger = LoggerFactory.getLogger(Cell.class);
+    public static final int MIN_EAT_4_MATE = 10;
 
     protected Ecosystem ecosystem;
     protected CellStatus status;
@@ -53,7 +54,7 @@ public abstract class Cell extends Thread{
                         die();
                     }
                     else eatCount++;
-                    if (eatCount == 10){
+                    if (eatCount == MIN_EAT_4_MATE){
                         status = CellStatus.MATING;
                     }
                     break;
@@ -65,10 +66,7 @@ public abstract class Cell extends Thread{
                     logger.info("{} is now content and sleeping", getName());
                     try {
                         Thread.sleep(ecosystem.getFullTime() * 1000);
-                    } catch (InterruptedException e) {
-                        // TODO: handle properly
-                        e.printStackTrace();
-                    }
+                    } catch (InterruptedException ignored) {}
                     status = CellStatus.HUNGRY;
                     logger.info("{} woke up", getName());
                     break;

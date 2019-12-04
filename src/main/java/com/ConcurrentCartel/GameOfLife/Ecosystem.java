@@ -68,13 +68,12 @@ public class Ecosystem {
         }
 
         startLatch.countDown();
+        logger.info("The simulation has started.");
         try {
             startLatch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        logger.info("The simulation has started.");
     }
 
     Object cellListLock = new Object();
@@ -115,6 +114,11 @@ public class Ecosystem {
     }
 
     // The food lock should be called whenever more food is added
+
+    /**
+     * uses reentrant lock foodLock
+     * @param amount
+     */
     public void addFoodUnit(int amount){
         foodLock.lock();
             foodUnits += amount;
@@ -126,20 +130,18 @@ public class Ecosystem {
     // the locking process times out and starts again.
     public boolean removeFoodUnit(){
         int timeout = getStarveTime();
-        for(int i = 0; i < timeout; i++) {
-            try {
-                boolean isLockAcquired = foodLock.tryLock(1, TimeUnit.SECONDS);
-                if (isLockAcquired) {
-                    if (foodUnits > 0) {
-                        foodUnits--;
-                        return true;
-                    }
+        try {
+            boolean isLockAcquired = foodLock.tryLock(timeout, TimeUnit.SECONDS);
+            if (isLockAcquired) {
+                if (foodUnits > 0) {
+                    foodUnits--;
+                    return true;
                 }
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            } finally {
-                foodLock.unlock();
             }
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        } finally {
+            foodLock.unlock();
         }
         return false;
     }
@@ -149,6 +151,6 @@ public class Ecosystem {
     }
 
     public int getFullTime(){
-        return rules.getStarveTime();
+        return rules.getFullTime();
     }
 }

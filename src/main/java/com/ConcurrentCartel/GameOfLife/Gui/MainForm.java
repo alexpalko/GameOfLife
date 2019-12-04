@@ -18,7 +18,6 @@ public class MainForm {
     private JButton startSimulationButton;
 
     private Ecosystem ecosystem;
-    private boolean simulationStarted = false;
 
     public MainForm() {
         startSimulationButton.addActionListener(new ActionListener() {
@@ -32,11 +31,10 @@ public class MainForm {
                     GameRules rules = new GameRules(aCellsNo, sCellsNo, startFood, starveTime, fullTime);
                     ecosystem = new Ecosystem(rules);
                     ecosystem.start();
-                    simulationStarted = true;
                     startSimulationButton.setEnabled(false);
                 }
                 catch (Exception ex){
-                    // TODO: exception form
+                    // ignore
                 }
             }
         });
